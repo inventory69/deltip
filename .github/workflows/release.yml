@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact-name: linux
+            artifact-path: composeApp/build/compose/binaries/main/deb/*.deb composeApp/build/compose/binaries/main/rpm/*.rpm
+          - os: windows-latest
+            artifact-name: windows
+            artifact-path: composeApp/build/compose/binaries/main/exe/*.exe
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install Linux packaging tools
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y fakeroot rpm
+
+      - name: Run tests
+        run: ./gradlew :composeApp:allTests --stacktrace
+
+      - name: Build native distribution
+        run: ./gradlew :composeApp:packageDistributionForCurrentOS --stacktrace
+
+      - name: List build outputs
+        shell: bash
+        run: ls -la composeApp/build/compose/binaries/main/ || true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: deltip-${{ matrix.artifact-name }}
+          path: |
+            composeApp/build/compose/binaries/main/deb/*.deb
+            composeApp/build/compose/binaries/main/rpm/*.rpm
+            composeApp/build/compose/binaries/main/exe/*.exe
+            composeApp/build/compose/binaries/main/msi/*.msi
+          if-no-files-found: ignore
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Flatten artifact directory
+        run: |
+          mkdir -p release
+          find artifacts -type f \( -name "*.deb" -o -name "*.rpm" -o -name "*.exe" -o -name "*.msi" \) -exec mv {} release/ \;
+          ls -la release/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
