@@ -1,5 +1,7 @@
 package dev.dettmer.deltip.ui
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -36,6 +38,28 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
 
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
+
+    // ----- Clear-on-Click when field is already focused -----
+    val interactionSource = remember { MutableInteractionSource() }
+    var isFocused by remember { mutableStateOf(false) }
+    var wasFocusedBeforePress by remember { mutableStateOf(false) }
+
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is PressInteraction.Press -> {
+                    // Snapshot focus status BEFORE the click potentially changes it.
+                    wasFocusedBeforePress = isFocused
+                }
+                is PressInteraction.Release -> {
+                    if (wasFocusedBeforePress && input.isNotEmpty()) {
+                        viewModel.clearInput()
+                    }
+                }
+                else -> Unit
+            }
+        }
+    }
 
     var showCopiedHint by remember { mutableStateOf(false) }
     LaunchedEffect(result) {
@@ -56,17 +80,12 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
             label = { Text("Preis") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            interactionSource = interactionSource,
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .onFocusChanged { isFocused = it.isFocused },
         )
-
-        Spacer(Modifier.height(8.dp))
-
-        OutlinedButton(
-            onClick = { viewModel.clearInput(); focusRequester.requestFocus() },
-            enabled = input.isNotEmpty(),
-        ) {
-            Text("Löschen")
-        }
 
         Spacer(Modifier.height(16.dp))
 
