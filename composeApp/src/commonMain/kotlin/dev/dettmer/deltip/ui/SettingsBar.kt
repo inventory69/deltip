@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import dev.dettmer.deltip.model.AppMode
 import dev.dettmer.deltip.platform.supportsAlwaysOnTop
 import dev.dettmer.deltip.platform.supportsAutostart
 import dev.dettmer.deltip.state.AppViewModel
@@ -30,26 +31,42 @@ fun SettingsBar(viewModel: AppViewModel) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.Bottom,
     ) {
-        OutlinedTextField(
-            value = if (settings.discountPercent == settings.discountPercent.toLong().toDouble())
-                settings.discountPercent.toLong().toString()
-            else
-                settings.discountPercent.toString(),
-            onValueChange = { raw ->
-                raw.replace(",", ".").toDoubleOrNull()?.let { viewModel.updateDiscountPercent(it) }
-            },
-            label = { Text("Rabatt %") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            singleLine = true,
-            modifier = Modifier.width(90.dp),
-        )
+        // Show only the percent field for the active mode.
+        when (settings.mode) {
+            AppMode.RABATT -> OutlinedTextField(
+                value = if (settings.discountPercent == settings.discountPercent.toLong().toDouble())
+                    settings.discountPercent.toLong().toString()
+                else
+                    settings.discountPercent.toString(),
+                onValueChange = { raw ->
+                    raw.replace(",", ".").toDoubleOrNull()?.let { viewModel.updateDiscountPercent(it) }
+                },
+                label = { Text("Rabatt %") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
+                modifier = Modifier.width(90.dp),
+            )
+            AppMode.MWST -> OutlinedTextField(
+                value = if (settings.vatPercent == settings.vatPercent.toLong().toDouble())
+                    settings.vatPercent.toLong().toString()
+                else
+                    settings.vatPercent.toString(),
+                onValueChange = { raw ->
+                    raw.replace(",", ".").toDoubleOrNull()?.let { viewModel.updateVatPercent(it) }
+                },
+                label = { Text("MwSt %") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
+                modifier = Modifier.width(90.dp),
+            )
+        }
 
         OutlinedTextField(
             value = settings.currencySymbol,
             onValueChange = { if (it.length <= 3) viewModel.updateCurrencySymbol(it) },
             label = { Text("Symbol") },
             singleLine = true,
-            modifier = Modifier.width(72.dp),
+            modifier = Modifier.width(80.dp),
         )
 
         if (supportsAlwaysOnTop) {
@@ -76,8 +93,15 @@ private fun ToggleColumn(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.labelSmall)
+    Column(
+        modifier = Modifier.width(70.dp),               // guarantees room for "Autostart"
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            maxLines = 1,                                // guard against line-wrap
+        )
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }

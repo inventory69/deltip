@@ -3,8 +3,11 @@ package dev.dettmer.deltip.state
 import dev.dettmer.deltip.logic.DiscountCalculator
 import dev.dettmer.deltip.logic.PriceFormatter
 import dev.dettmer.deltip.logic.PriceParser
+import dev.dettmer.deltip.logic.VatCalculator
+import dev.dettmer.deltip.model.AppMode
 import dev.dettmer.deltip.model.AppSettings
 import dev.dettmer.deltip.model.CalculationResult
+import dev.dettmer.deltip.model.VatResult
 import dev.dettmer.deltip.platform.Autostart
 import dev.dettmer.deltip.platform.copyToClipboard
 import kotlinx.coroutines.CoroutineScope
@@ -42,7 +45,17 @@ class AppViewModel(
         settingsRepo.update(appSettings.value.copy(autostartEnabled = b))
     }
 
-    // ----- Single-Modus (reaktiv) -----
+    fun updateWindowPosition(x: Float, y: Float) {
+        settingsRepo.update(appSettings.value.copy(windowX = x, windowY = y))
+    }
+
+    fun updateVatPercent(p: Double) =
+        settingsRepo.update(appSettings.value.copy(vatPercent = p))
+
+    fun updateMode(m: AppMode) =
+        settingsRepo.update(appSettings.value.copy(mode = m))
+
+    // ----- Input (shared across modes) -----
     private val _singlePriceInput = MutableStateFlow("")
     val singlePriceInput: StateFlow<String> = _singlePriceInput.asStateFlow()
 
@@ -50,26 +63,39 @@ class AppViewModel(
 
     fun clearInput() { _singlePriceInput.value = "" }
 
-    /**
-     * Abgeleiteter Flow: reagiert auf Eingabe-Änderung UND auf Settings-Änderung
-     * (Rabatt-% + Währungssymbol). Bei ungültiger Eingabe oder leerem String → null.
-     */
+    // ----- Discount result -----
     val singleResult: StateFlow<CalculationResult?> =
         combine(_singlePriceInput, appSettings) { input, settings ->
+            if (settings.mode != AppMode.RABATT) return@combine null
             val price = PriceParser.parse(input) ?: return@combine null
             DiscountCalculator.calculate(price, settings.discountPercent)
         }.stateIn(scope, SharingStarted.Eagerly, null)
 
+    // ----- VAT result -----
+    val vatResult: StateFlow<VatResult?> =
+        combine(_singlePriceInput, appSettings) { input, settings ->
+            if (settings.mode != AppMode.MWST) return@combine null
+            val gross = PriceParser.parse(input) ?: return@combine null
+            VatCalculator.calculate(gross, settings.vatPercent)
+        }.stateIn(scope, SharingStarted.Eagerly, null)
+
     init {
-        // ----- Auto-Copy mit Debounce -----
-        // Erst 300 ms Pause nach der letzten Eingabe → kopieren.
-        // Leerer Input / Parse-Fehler → kein Copy (if-Guard statt filterNotNull,
-        // damit das Settings-Objekt nicht verloren geht).
+        // Auto-copy: discount mode → final price
         combine(singleResult, appSettings) { result, settings -> result to settings }
             .debounce(300)
             .onEach { (result, settings) ->
-                if (result != null) {
+                if (settings.mode == AppMode.RABATT && result != null) {
                     copyToClipboard(PriceFormatter.format(result.finalPrice, settings.currencySymbol))
+                }
+            }
+            .launchIn(scope)
+
+        // Auto-copy: VAT mode → VAT amount (Anteil)
+        combine(vatResult, appSettings) { result, settings -> result to settings }
+            .debounce(300)
+            .onEach { (result, settings) ->
+                if (settings.mode == AppMode.MWST && result != null) {
+                    copyToClipboard(PriceFormatter.format(result.vatAmount, settings.currencySymbol))
                 }
             }
             .launchIn(scope)

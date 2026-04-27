@@ -1,6 +1,7 @@
 package dev.dettmer.deltip.state
 
 import com.russhwolf.settings.Settings
+import dev.dettmer.deltip.model.AppMode
 import dev.dettmer.deltip.model.AppSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +16,10 @@ class SettingsRepository(private val settings: Settings = Settings()) {
         settings.putString("currencySymbol", newSettings.currencySymbol)
         settings.putBoolean("alwaysOnTop", newSettings.alwaysOnTop)
         settings.putBoolean("autostartEnabled", newSettings.autostartEnabled)
+        settings.putFloat("windowX", newSettings.windowX)
+        settings.putFloat("windowY", newSettings.windowY)
+        settings.putDouble("vatPercent", newSettings.vatPercent)
+        settings.putString("mode", newSettings.mode.name)
         _state.value = newSettings
     }
 
@@ -23,5 +28,11 @@ class SettingsRepository(private val settings: Settings = Settings()) {
         currencySymbol = settings.getString("currencySymbol", "€"),
         alwaysOnTop = settings.getBoolean("alwaysOnTop", false),
         autostartEnabled = settings.getBoolean("autostartEnabled", false),
+        windowX = settings.getFloat("windowX", -1f),
+        windowY = settings.getFloat("windowY", -1f),
+        vatPercent = settings.getDouble("vatPercent", 19.0),
+        mode = runCatching {
+            AppMode.valueOf(settings.getString("mode", AppMode.RABATT.name))
+        }.getOrDefault(AppMode.RABATT),
     )
 }

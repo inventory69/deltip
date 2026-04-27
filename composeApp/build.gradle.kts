@@ -57,7 +57,7 @@ android {
         applicationId = "dev.dettmer.deltip"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
+        versionCode = 2
         versionName = appVersion
     }
 
@@ -70,6 +70,11 @@ android {
 compose.desktop {
     application {
         mainClass = "dev.dettmer.deltip.MainKt"
+        jvmArgs += listOf(
+            "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED",
+            "--add-opens", "java.desktop/sun.awt.windows=ALL-UNNAMED",
+            "--enable-native-access=ALL-UNNAMED",
+        )
         nativeDistributions {
             targetFormats(
                 TargetFormat.Exe,
