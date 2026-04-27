@@ -49,7 +49,7 @@ fun SettingsBar(viewModel: AppViewModel) {
             onValueChange = { if (it.length <= 3) viewModel.updateCurrencySymbol(it) },
             label = { Text("Symbol") },
             singleLine = true,
-            modifier = Modifier.width(72.dp),
+            modifier = Modifier.width(80.dp),
         )
 
         if (supportsAlwaysOnTop) {
@@ -76,8 +76,15 @@ private fun ToggleColumn(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.labelSmall)
+    Column(
+        modifier = Modifier.width(70.dp),               // guarantees room for "Autostart"
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            maxLines = 1,                                // guard against line-wrap
+        )
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
