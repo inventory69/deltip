@@ -15,6 +15,8 @@ class SettingsRepository(private val settings: Settings = Settings()) {
         settings.putString("currencySymbol", newSettings.currencySymbol)
         settings.putBoolean("alwaysOnTop", newSettings.alwaysOnTop)
         settings.putBoolean("autostartEnabled", newSettings.autostartEnabled)
+        settings.putFloat("windowX", newSettings.windowX)
+        settings.putFloat("windowY", newSettings.windowY)
         _state.value = newSettings
     }
 
@@ -23,5 +25,7 @@ class SettingsRepository(private val settings: Settings = Settings()) {
         currencySymbol = settings.getString("currencySymbol", "€"),
         alwaysOnTop = settings.getBoolean("alwaysOnTop", false),
         autostartEnabled = settings.getBoolean("autostartEnabled", false),
+        windowX = settings.getFloat("windowX", -1f),
+        windowY = settings.getFloat("windowY", -1f),
     )
 }

@@ -5,4 +5,7 @@ data class AppSettings(
     val currencySymbol: String = "€",
     val alwaysOnTop: Boolean = false,
     val autostartEnabled: Boolean = false,
+    // Window position (desktop only). -1f = not set → PlatformDefault.
+    val windowX: Float = -1f,
+    val windowY: Float = -1f,
 )

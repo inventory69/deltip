@@ -42,6 +42,10 @@ class AppViewModel(
         settingsRepo.update(appSettings.value.copy(autostartEnabled = b))
     }
 
+    fun updateWindowPosition(x: Float, y: Float) {
+        settingsRepo.update(appSettings.value.copy(windowX = x, windowY = y))
+    }
+
     // ----- Single-Modus (reaktiv) -----
     private val _singlePriceInput = MutableStateFlow("")
     val singlePriceInput: StateFlow<String> = _singlePriceInput.asStateFlow()
