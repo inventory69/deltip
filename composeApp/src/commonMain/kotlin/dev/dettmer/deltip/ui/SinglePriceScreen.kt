@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.dettmer.deltip.logic.PriceFormatter
+import dev.dettmer.deltip.model.AppMode
 import dev.dettmer.deltip.state.AppViewModel
 import kotlinx.coroutines.delay
 
@@ -34,6 +35,7 @@ import kotlinx.coroutines.delay
 fun SinglePriceScreen(viewModel: AppViewModel) {
     val input by viewModel.singlePriceInput.collectAsState()
     val result by viewModel.singleResult.collectAsState()
+    val vatResult by viewModel.vatResult.collectAsState()
     val settings by viewModel.appSettings.collectAsState()
 
     val focusRequester = remember { FocusRequester() }
@@ -48,7 +50,6 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
         interactionSource.interactions.collect { interaction ->
             when (interaction) {
                 is PressInteraction.Press -> {
-                    // Snapshot focus status BEFORE the click potentially changes it.
                     wasFocusedBeforePress = isFocused
                 }
                 is PressInteraction.Release -> {
@@ -62,8 +63,10 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
     }
 
     var showCopiedHint by remember { mutableStateOf(false) }
-    LaunchedEffect(result) {
-        if (result != null) {
+    // Show "copied" hint for whichever active result changes.
+    val activeResult: Any? = if (settings.mode == AppMode.RABATT) result else vatResult
+    LaunchedEffect(activeResult) {
+        if (activeResult != null) {
             delay(350)
             showCopiedHint = true
             delay(1500)
@@ -74,44 +77,92 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
     }
 
     Column {
-        OutlinedTextField(
-            value = input,
-            onValueChange = viewModel::updateSinglePrice,
-            label = { Text("Preis") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            singleLine = true,
-            interactionSource = interactionSource,
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(focusRequester)
-                .onFocusChanged { isFocused = it.isFocused },
-        )
+        when (settings.mode) {
+            AppMode.RABATT -> {
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = viewModel::updateSinglePrice,
+                    label = { Text("Preis") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    interactionSource = interactionSource,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { isFocused = it.isFocused },
+                )
 
-        Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
 
-        if (result != null) {
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Originalpreis: ${PriceFormatter.format(result!!.original, settings.currencySymbol)}")
-                    Text(
-                        "Rabatt (${
-                            if (settings.discountPercent == settings.discountPercent.toLong().toDouble())
-                                settings.discountPercent.toLong().toString()
-                            else
-                                settings.discountPercent.toString()
-                        }%): ${PriceFormatter.format(result!!.discount, settings.currencySymbol)}"
-                    )
-                    Text(
-                        "Endpreis: ${PriceFormatter.format(result!!.finalPrice, settings.currencySymbol)}",
-                        fontWeight = FontWeight.Bold,
-                    )
+                if (result != null) {
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text("Originalpreis: ${PriceFormatter.format(result!!.original, settings.currencySymbol)}")
+                            Text(
+                                "Rabatt (${
+                                    if (settings.discountPercent == settings.discountPercent.toLong().toDouble())
+                                        settings.discountPercent.toLong().toString()
+                                    else
+                                        settings.discountPercent.toString()
+                                }%): ${PriceFormatter.format(result!!.discount, settings.currencySymbol)}"
+                            )
+                            Text(
+                                "Endpreis: ${PriceFormatter.format(result!!.finalPrice, settings.currencySymbol)}",
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+
+                    if (showCopiedHint) {
+                        Spacer(Modifier.height(4.dp))
+                        Text("Automatisch kopiert ✓", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
 
-            if (showCopiedHint) {
-                Spacer(Modifier.height(4.dp))
-                Text("Automatisch kopiert ✓", style = MaterialTheme.typography.bodySmall)
+            AppMode.MWST -> {
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = viewModel::updateSinglePrice,
+                    label = { Text("Bruttobetrag") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    interactionSource = interactionSource,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { isFocused = it.isFocused },
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                if (vatResult != null) {
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text("Bruttobetrag: ${PriceFormatter.format(vatResult!!.gross, settings.currencySymbol)}")
+                            Text(
+                                "MwSt (${
+                                    if (settings.vatPercent == settings.vatPercent.toLong().toDouble())
+                                        settings.vatPercent.toLong().toString()
+                                    else
+                                        settings.vatPercent.toString()
+                                }%): ${PriceFormatter.format(vatResult!!.vatAmount, settings.currencySymbol)}"
+                            )
+                            Text(
+                                "Nettobetrag: ${PriceFormatter.format(vatResult!!.net, settings.currencySymbol)}",
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+
+                    if (showCopiedHint) {
+                        Spacer(Modifier.height(4.dp))
+                        Text("Automatisch kopiert ✓", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
             }
         }
     }
 }
+
+

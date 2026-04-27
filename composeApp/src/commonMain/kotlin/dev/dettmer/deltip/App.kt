@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.dettmer.deltip.state.AppViewModel
 import dev.dettmer.deltip.state.SettingsRepository
+import dev.dettmer.deltip.ui.ModeToggle
 import dev.dettmer.deltip.ui.SettingsBar
 import dev.dettmer.deltip.ui.SinglePriceScreen
 
@@ -29,6 +30,8 @@ fun App(viewModel: AppViewModel = remember { AppViewModel(SettingsRepository()) 
                     .padding(12.dp)
             ) {
                 SettingsBar(viewModel)
+                Spacer(Modifier.height(8.dp))
+                ModeToggle(viewModel)
                 Spacer(Modifier.height(12.dp))
                 SinglePriceScreen(viewModel)
             }
