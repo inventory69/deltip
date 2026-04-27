@@ -1,5 +1,7 @@
 package dev.dettmer.deltip
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -8,6 +10,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import dev.dettmer.deltip.platform.applyDarkTitleBarIfSupported
 import dev.dettmer.deltip.state.AppViewModel
 import dev.dettmer.deltip.state.SettingsRepository
 
@@ -42,6 +45,10 @@ fun main() = application {
         state = windowState,
         alwaysOnTop = settings.alwaysOnTop,
     ) {
+        val dark = isSystemInDarkTheme()
+        LaunchedEffect(dark) {
+            applyDarkTitleBarIfSupported(window, dark)
+        }
         App(vm)
     }
 }
