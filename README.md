@@ -87,6 +87,18 @@ Suggestions and pull requests are welcome. Before opening a PR, please:
 > Note: only commit messages and this README are English. The user-facing UI
 > remains German (DACH-only).
 
+## Upcoming (v0.3.0)
+
+These features are planned but **not yet scheduled or decided**. No ETA.
+
+- **English UI (i18n):** Add English as a second language alongside the current
+  German-only UI, using Compose Multiplatform resource strings. The UX for
+  language selection is an open question (automatic system locale, or an in-app
+  toggle — to be decided).
+- **Signed Android release APK:** Set up Android keystore signing in CI so that
+  the GitHub release includes a signed `.apk` alongside the Linux and Windows
+  packages.
+
 ## License
 
 [GPL-3.0-or-later](LICENSE) — Fabian Dettmer, 2026.
