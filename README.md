@@ -1,143 +1,92 @@
 # Deltip
 
-Ein kleines Werkzeug, das Rabatte ausrechnet — ohne Klickorgie, ohne Werbung,
-ohne Internet. Preis eingeben, fertig. Der Endpreis steht sofort da und liegt
-nach kurzem Innehalten in der Zwischenablage.
+Mini tool for calculating discounts (and, since v0.2.0, for splitting gross
+amounts into net and VAT). Runs on Linux and Windows desktop as well as on
+Android. Offline, no ads, no tracking.
 
-Gebaut für den Schreibtisch (Linux, Windows) und für unterwegs (Android), mit
-denselben Eingabe- und Anzeigeregeln auf allen Geräten.
+> **Status:** Beta. The current version is tracked in
+> [`gradle.properties`](gradle.properties) (`app.version`). Public APIs and the
+> persisted settings schema may still change.
 
----
+## Modes
 
-## Was es kann
+- **Discount mode (default):** enter a price → the discounted final price is
+  shown immediately and copied to the clipboard a moment later.
+- **VAT mode:** enter a gross amount → the net amount and the contained VAT
+  share are shown. Auto-copy target: the VAT amount (Anteil).
 
-- **Sofortige Berechnung.** Sobald eine Zahl im Feld steht, erscheint der
-  Endpreis. Es gibt keinen „Berechnen"-Knopf.
-- **Automatisches Kopieren.** Kurz nach der letzten Tastenanschlag-Pause liegt
-  der Endpreis als Text in der Zwischenablage und kann in der Kasse, im
-  Browser oder in einer E-Mail eingefügt werden.
-- **Frei einstellbarer Rabatt.** Standard sind 20 %. Der Wert lässt sich
-  jederzeit ändern und bleibt nach dem nächsten Start erhalten.
-- **Komma oder Punkt.** `12,50` und `12.50` werden gleich verstanden.
-- **Eigenes Währungszeichen.** Standard ist `€`. Wer mag, schreibt `$`, `CHF`
-  oder lässt das Feld leer.
-- **Hell und dunkel.** Folgt dem Systemthema des Betriebssystems.
-- **Optional immer im Vordergrund** (nur Desktop) und **Autostart** mit dem
-  Rechner (Linux per `.desktop`-Datei, Windows per Registry).
+Both modes share the same input rules (`12,50` and `12.50` are treated
+identically) and the same auto-copy behaviour (300 ms debounce after the last
+keystroke).
 
-## Was es nicht macht
+## Requirements
 
-- Keine Berechnungen mit mehreren Positionen oder Summen — bewusst ein
-  Werkzeug für einen Preis nach dem anderen.
-- Keine Steuern, keine Währungsumrechnung, keine Verläufe.
-- Keine Datenübertragung. Die App läuft vollständig offline.
+- **JDK 21** (Eclipse Temurin or compatible)
+- Git
+- Optional, for native Linux packages: `fakeroot`, `rpm`
+- Optional, for the Windows `.exe`: WiX Toolset 3.x
 
----
-
-## Installation
-
-### Linux (Debian, Ubuntu, Mint)
-
-```bash
-sudo apt install ./deltip_1.0.0-1_amd64.deb
-```
-
-### Linux (Fedora, openSUSE, RHEL)
-
-```bash
-sudo rpm -i deltip-1.0.0-1.x86_64.rpm
-```
-
-### Linux (Arch, EndeavourOS, Manjaro)
-
-Die `.rpm`-Datei lässt sich nicht direkt nutzen. Stattdessen die `.deb`
-mit `dpkg-deb` entpacken oder direkt aus den Quellen bauen
-(siehe Abschnitt „Selbst bauen").
-
-### Windows
-
-Die `Deltip-1.0.0.exe` aus dem Release-Bereich herunterladen und
-ausführen. Beim ersten Start zeigt Windows eine SmartScreen-Warnung; über
-„Weitere Informationen" → „Trotzdem ausführen" lässt sich die App starten.
-
-### Android
-
-Die `composeApp-debug.apk` aus dem Release-Bereich herunterladen. Vor der
-Installation muss in den Android-Einstellungen die Installation aus
-unbekannten Quellen für den verwendeten Browser oder Dateimanager freigegeben
-werden.
-
----
-
-## Bedienung
-
-1. App öffnen — der Eingabe-Cursor steht bereits im Preisfeld.
-2. Preis tippen, zum Beispiel `49,99`.
-3. Endpreis ablesen. Nach einer kurzen Pause liegt er in der Zwischenablage.
-4. Mit `Strg + V` (Windows/Linux) oder langem Druck und „Einfügen" (Android)
-   in das Zielfeld einfügen.
-5. Mit dem Knopf „Löschen" das Feld leeren — der Cursor springt automatisch
-   zurück.
-
-Standard-Rabatt und Währungszeichen lassen sich oben in der Einstellungs-Leiste
-ändern. Die Werte werden automatisch gespeichert.
-
----
-
-## Selbst bauen
-
-Voraussetzung ist ein installiertes **JDK 21** (Eclipse Temurin oder
-vergleichbar).
+## Build and run
 
 ```bash
 git clone https://github.com/inventory69/deltip.git
 cd deltip
 
-./gradlew :composeApp:run                              # Desktop direkt starten
-./gradlew :composeApp:assembleDebug                    # Android-APK bauen
-./gradlew :composeApp:packageDistributionForCurrentOS  # Native Pakete bauen
+./gradlew :composeApp:run                              # launch desktop app
+./gradlew :composeApp:assembleDebug                    # build Android APK
+./gradlew :composeApp:packageDistributionForCurrentOS  # build native packages
+./gradlew :composeApp:allTests                         # run unit tests
 ```
 
-Die nativen Pakete entstehen unter
-`composeApp/build/compose/binaries/main/`.
+Native packages are written to `composeApp/build/compose/binaries/main/`.
 
-Auf Linux werden zusätzlich `fakeroot` und `rpm` benötigt:
+## Usage
 
-```bash
-# Debian/Ubuntu
-sudo apt install fakeroot rpm
+1. Open the app — the input cursor is already focused in the price (or gross)
+   field.
+2. Pick the mode using the **Rabatt** / **MwSt** toggle above the input field.
+3. Type a value, e.g. `49,99`.
+4. Read the result. After a short pause the relevant value is in the clipboard.
+5. Click into the input field again to clear it — the cursor stays in the
+   field, ready for the next value.
 
-# Arch/EndeavourOS
-sudo pacman -S fakeroot rpm-tools
-```
+The settings bar at the top (discount % or VAT %, currency symbol, "Vorne",
+"Autostart") persists its values across restarts. Since v0.2.0 the desktop
+window also remembers its last on-screen position.
 
-Auf Windows wird das **WiX Toolset 3.x** benötigt, damit jpackage eine
-`.exe` erzeugen kann.
+## Platform notes
 
----
+- **Linux desktop:** autostart is wired up via
+  `~/.config/autostart/deltip.desktop`.
+- **Windows desktop:** autostart is wired up via the registry key
+  `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run`. Since
+  v0.2.0 the window title bar follows the system dark mode.
+- **Android:** autostart and "always on top" are not available; the
+  corresponding toggles are hidden.
 
-## Tests
+## Project documentation
 
-```bash
-./gradlew :composeApp:allTests
-```
+Architecture, version matrix, constraints and implementation plans live in a
+separate repository:
 
-Der Bericht liegt anschließend unter
-`composeApp/build/reports/tests/`.
+- `project-docs/deltip/` (private) — `developer_constraints.md`,
+  `architektur.md`, `versions.md`, `impl-plan.md` (v0.1.0),
+  `impl-plan-v0.2.0.md`, `offene-fragen-v0.2.0.md`.
 
----
+## Contributing
 
-## Mitwirken
+Suggestions and pull requests are welcome. Before opening a PR, please:
 
-Vorschläge und Pull Requests sind willkommen. Vor einem PR bitte:
+1. Make sure `./gradlew :composeApp:allTests` is green locally.
+2. Write commit messages in
+   [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+   style — **English**, max. 72 characters in the subject, imperative mood.
+3. For platform-specific changes use the existing `expect`/`actual` bridges
+   under `commonMain/platform/` + `<target>Main/platform/`.
 
-1. `./gradlew :composeApp:allTests` lokal grün bekommen
-2. Commit-Nachrichten im
-   [Conventional-Commits](https://www.conventionalcommits.org/de/v1.0.0/)-Stil
-   verfassen
+> Note: only commit messages and this README are English. The user-facing UI
+> remains German (DACH-only).
 
----
-
-## Lizenz
+## License
 
 [GPL-3.0-or-later](LICENSE) — Fabian Dettmer, 2026.
