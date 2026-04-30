@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.util.Base64
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -57,13 +58,35 @@ android {
         applicationId = "dev.dettmer.deltip"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
+        versionCode = 3              // bumped for v0.3.0
         versionName = appVersion
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    signingConfigs {
+        val keystoreB64: String? = System.getenv("KEYSTORE_BASE64")
+        if (!keystoreB64.isNullOrBlank()) {
+            create("release") {
+                val ksFile = layout.buildDirectory.file("deltip-release.jks").get().asFile
+                ksFile.parentFile.mkdirs()
+                ksFile.writeBytes(Base64.getDecoder().decode(keystoreB64))
+                storeFile = ksFile
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+                keyAlias = System.getenv("KEY_ALIAS") ?: "deltip"
+                keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            signingConfigs.findByName("release")?.let { signingConfig = it }
+        }
     }
 }
 

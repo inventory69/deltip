@@ -23,3 +23,9 @@ local.properties
 
 # Windows
 Thumbs.db
+
+# Android signing (NEVER commit)
+*.jks
+*.keystore
+*.jks.b64
+keystore.properties
