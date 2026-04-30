@@ -11,6 +11,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import dev.dettmer.deltip.model.AppMode
 import dev.dettmer.deltip.state.AppViewModel
+import deltip.composeapp.generated.resources.Res
+import deltip.composeapp.generated.resources.mode_discount
+import deltip.composeapp.generated.resources.mode_vat
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ModeToggle(viewModel: AppViewModel) {
@@ -20,11 +24,11 @@ fun ModeToggle(viewModel: AppViewModel) {
             selected = settings.mode == AppMode.RABATT,
             onClick = { viewModel.updateMode(AppMode.RABATT) },
             shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-        ) { Text("Rabatt") }
+        ) { Text(stringResource(Res.string.mode_discount)) }
         SegmentedButton(
             selected = settings.mode == AppMode.MWST,
             onClick = { viewModel.updateMode(AppMode.MWST) },
             shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-        ) { Text("MwSt") }
+        ) { Text(stringResource(Res.string.mode_vat)) }
     }
 }

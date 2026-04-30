@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="label_price">Preis</string>
+    <string name="label_gross">Bruttobetrag</string>
+    <string name="label_original_price">Originalpreis</string>
+    <string name="card_original_price">Originalpreis: %1$s</string>
+    <string name="card_gross">Bruttobetrag: %1$s</string>
+    <string name="card_final_price">Endpreis: %1$s</string>
+    <string name="card_net">Nettobetrag: %1$s</string>
+    <string name="label_discount">Rabatt (%1$s%): %2$s</string>
+    <string name="label_vat">MwSt (%1$s%): %2$s</string>
+    <string name="label_final_price">Endpreis</string>
+    <string name="label_net">Nettobetrag</string>
+    <string name="label_copied">Automatisch kopiert ✓</string>
+    <string name="label_discount_percent">Rabatt %</string>
+    <string name="label_vat_percent">MwSt %</string>
+    <string name="label_symbol">Symbol</string>
+    <string name="label_always_on_top">Vorne</string>
+    <string name="label_autostart">Autostart</string>
+    <string name="mode_discount">Rabatt</string>
+    <string name="mode_vat">MwSt</string>
+</resources>

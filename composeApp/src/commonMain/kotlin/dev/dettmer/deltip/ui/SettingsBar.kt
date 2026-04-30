@@ -28,6 +28,13 @@ import dev.dettmer.deltip.model.AppMode
 import dev.dettmer.deltip.platform.supportsAlwaysOnTop
 import dev.dettmer.deltip.platform.supportsAutostart
 import dev.dettmer.deltip.state.AppViewModel
+import deltip.composeapp.generated.resources.Res
+import deltip.composeapp.generated.resources.label_always_on_top
+import deltip.composeapp.generated.resources.label_autostart
+import deltip.composeapp.generated.resources.label_discount_percent
+import deltip.composeapp.generated.resources.label_symbol
+import deltip.composeapp.generated.resources.label_vat_percent
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SettingsBar(viewModel: AppViewModel) {
@@ -73,7 +80,7 @@ fun SettingsBar(viewModel: AppViewModel) {
                 onValueChange = { raw ->
                     raw.replace(",", ".").toDoubleOrNull()?.let { viewModel.updateDiscountPercent(it) }
                 },
-                label = { Text("Rabatt %") },
+                label = { Text(stringResource(Res.string.label_discount_percent)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 modifier = Modifier.width(90.dp),
@@ -86,7 +93,7 @@ fun SettingsBar(viewModel: AppViewModel) {
                 onValueChange = { raw ->
                     raw.replace(",", ".").toDoubleOrNull()?.let { viewModel.updateVatPercent(it) }
                 },
-                label = { Text("MwSt %") },
+                label = { Text(stringResource(Res.string.label_vat_percent)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 modifier = Modifier.width(90.dp),
@@ -95,7 +102,7 @@ fun SettingsBar(viewModel: AppViewModel) {
 
         OutlinedTextField(
             state = symbolState,
-            label = { Text("Symbol") },
+            label = { Text(stringResource(Res.string.label_symbol)) },
             labelPosition = TextFieldLabelPosition.Attached(alwaysMinimize = true),
             lineLimits = androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine,
             contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
@@ -104,7 +111,7 @@ fun SettingsBar(viewModel: AppViewModel) {
 
         if (supportsAlwaysOnTop) {
             ToggleColumn(
-                label = "Vorne",
+                label = stringResource(Res.string.label_always_on_top),
                 checked = settings.alwaysOnTop,
                 onCheckedChange = viewModel::updateAlwaysOnTop,
             )
@@ -112,7 +119,7 @@ fun SettingsBar(viewModel: AppViewModel) {
 
         if (supportsAutostart) {
             ToggleColumn(
-                label = "Autostart",
+                label = stringResource(Res.string.label_autostart),
                 checked = settings.autostartEnabled,
                 onCheckedChange = viewModel::updateAutostart,
             )

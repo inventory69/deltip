@@ -29,6 +29,17 @@ import androidx.compose.ui.unit.dp
 import dev.dettmer.deltip.logic.PriceFormatter
 import dev.dettmer.deltip.model.AppMode
 import dev.dettmer.deltip.state.AppViewModel
+import deltip.composeapp.generated.resources.Res
+import deltip.composeapp.generated.resources.card_final_price
+import deltip.composeapp.generated.resources.card_gross
+import deltip.composeapp.generated.resources.card_net
+import deltip.composeapp.generated.resources.card_original_price
+import deltip.composeapp.generated.resources.label_copied
+import deltip.composeapp.generated.resources.label_discount
+import deltip.composeapp.generated.resources.label_gross
+import deltip.composeapp.generated.resources.label_price
+import deltip.composeapp.generated.resources.label_vat
+import org.jetbrains.compose.resources.stringResource
 import kotlinx.coroutines.delay
 
 @Composable
@@ -82,7 +93,7 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
                 OutlinedTextField(
                     value = input,
                     onValueChange = viewModel::updateSinglePrice,
-                    label = { Text("Preis") },
+                    label = { Text(stringResource(Res.string.label_price)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     interactionSource = interactionSource,
@@ -97,17 +108,14 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
                 if (result != null) {
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(16.dp)) {
-                            Text("Originalpreis: ${PriceFormatter.format(result!!.original, settings.currencySymbol)}")
+                            val percentText = if (settings.discountPercent == settings.discountPercent.toLong().toDouble())
+                                settings.discountPercent.toLong().toString()
+                            else
+                                settings.discountPercent.toString()
+                            Text(stringResource(Res.string.card_original_price, PriceFormatter.format(result!!.original, settings.currencySymbol)))
+                            Text(stringResource(Res.string.label_discount, percentText, PriceFormatter.format(result!!.discount, settings.currencySymbol)))
                             Text(
-                                "Rabatt (${
-                                    if (settings.discountPercent == settings.discountPercent.toLong().toDouble())
-                                        settings.discountPercent.toLong().toString()
-                                    else
-                                        settings.discountPercent.toString()
-                                }%): ${PriceFormatter.format(result!!.discount, settings.currencySymbol)}"
-                            )
-                            Text(
-                                "Endpreis: ${PriceFormatter.format(result!!.finalPrice, settings.currencySymbol)}",
+                                stringResource(Res.string.card_final_price, PriceFormatter.format(result!!.finalPrice, settings.currencySymbol)),
                                 fontWeight = FontWeight.Bold,
                             )
                         }
@@ -115,7 +123,7 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
 
                     if (showCopiedHint) {
                         Spacer(Modifier.height(4.dp))
-                        Text("Automatisch kopiert ✓", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(Res.string.label_copied), style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
@@ -124,7 +132,7 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
                 OutlinedTextField(
                     value = input,
                     onValueChange = viewModel::updateSinglePrice,
-                    label = { Text("Bruttobetrag") },
+                    label = { Text(stringResource(Res.string.label_gross)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     interactionSource = interactionSource,
@@ -139,17 +147,14 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
                 if (vatResult != null) {
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(16.dp)) {
-                            Text("Bruttobetrag: ${PriceFormatter.format(vatResult!!.gross, settings.currencySymbol)}")
+                            val percentText = if (settings.vatPercent == settings.vatPercent.toLong().toDouble())
+                                settings.vatPercent.toLong().toString()
+                            else
+                                settings.vatPercent.toString()
+                            Text(stringResource(Res.string.card_gross, PriceFormatter.format(vatResult!!.gross, settings.currencySymbol)))
+                            Text(stringResource(Res.string.label_vat, percentText, PriceFormatter.format(vatResult!!.vatAmount, settings.currencySymbol)))
                             Text(
-                                "MwSt (${
-                                    if (settings.vatPercent == settings.vatPercent.toLong().toDouble())
-                                        settings.vatPercent.toLong().toString()
-                                    else
-                                        settings.vatPercent.toString()
-                                }%): ${PriceFormatter.format(vatResult!!.vatAmount, settings.currencySymbol)}"
-                            )
-                            Text(
-                                "Nettobetrag: ${PriceFormatter.format(vatResult!!.net, settings.currencySymbol)}",
+                                stringResource(Res.string.card_net, PriceFormatter.format(vatResult!!.net, settings.currencySymbol)),
                                 fontWeight = FontWeight.Bold,
                             )
                         }
@@ -157,7 +162,7 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
 
                     if (showCopiedHint) {
                         Spacer(Modifier.height(4.dp))
-                        Text("Automatisch kopiert ✓", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(Res.string.label_copied), style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }

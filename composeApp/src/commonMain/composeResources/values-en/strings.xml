@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="label_price">Price</string>
+    <string name="label_gross">Gross amount</string>
+    <string name="label_original_price">Original price</string>
+    <string name="card_original_price">Original price: %1$s</string>
+    <string name="card_gross">Gross amount: %1$s</string>
+    <string name="card_final_price">Final price: %1$s</string>
+    <string name="card_net">Net amount: %1$s</string>
+    <string name="label_discount">Disc. (%1$s%): %2$s</string>
+    <string name="label_vat">VAT (%1$s%): %2$s</string>
+    <string name="label_final_price">Final price</string>
+    <string name="label_net">Net amount</string>
+    <string name="label_copied">Copied automatically ✓</string>
+    <string name="label_discount_percent">Disc. %</string>
+    <string name="label_vat_percent">VAT %</string>
+    <string name="label_symbol">Symbol</string>
+    <string name="label_always_on_top">Top</string>
+    <string name="label_autostart">Autostart</string>
+    <string name="mode_discount">Discount</string>
+    <string name="mode_vat">VAT</string>
+</resources>
