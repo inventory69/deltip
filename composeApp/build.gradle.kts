@@ -92,11 +92,13 @@ compose.desktop {
                 upgradeUuid = "5b6a8e1c-7d3f-4f0a-9d3e-1d8d9f9c2e11"
                 shortcut = true
                 dirChooser = true
+                iconFile.set(project.file("src/desktopMain/resources/deltip-icon.ico"))
             }
             linux {
                 shortcut = true
                 menuGroup = "Utility"
                 appCategory = "Utility"
+                iconFile.set(project.file("src/desktopMain/resources/deltip-icon-linux.png"))
             }
         }
     }

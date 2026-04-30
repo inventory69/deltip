@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
@@ -42,6 +43,7 @@ fun main() = application {
             exitApplication()
         },
         title = "Deltip",
+        icon = painterResource("deltip-icon.png"),
         state = windowState,
         alwaysOnTop = settings.alwaysOnTop,
     ) {
