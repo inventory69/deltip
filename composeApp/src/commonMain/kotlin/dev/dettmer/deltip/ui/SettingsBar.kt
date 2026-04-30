@@ -6,17 +6,24 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldLabelPosition
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.drop
 import dev.dettmer.deltip.model.AppMode
 import dev.dettmer.deltip.platform.supportsAlwaysOnTop
 import dev.dettmer.deltip.platform.supportsAutostart
@@ -25,6 +32,31 @@ import dev.dettmer.deltip.state.AppViewModel
 @Composable
 fun SettingsBar(viewModel: AppViewModel) {
     val settings by viewModel.appSettings.collectAsState()
+
+    // TextFieldState for the Symbol field — allows TextFieldLabelPosition.Attached(alwaysMinimize=true)
+    // so the label always sits in the outline cutout at the top, even when the field is empty.
+    val symbolState = remember { TextFieldState(initialText = settings.currencySymbol) }
+
+    // Seed symbolState when the settings flow delivers a new value from outside
+    // (e.g. initial load). Skip the first emission to avoid fighting the user's own input.
+    LaunchedEffect(Unit) {
+        snapshotFlow { settings.currencySymbol }
+            .drop(1)
+            .collect { newSymbol ->
+                if (symbolState.text.toString() != newSymbol) {
+                    symbolState.edit { replace(0, length, newSymbol) }
+                }
+            }
+    }
+
+    // Push symbol changes back to the ViewModel.
+    LaunchedEffect(symbolState) {
+        snapshotFlow { symbolState.text.toString() }
+            .drop(1)
+            .collect { raw ->
+                if (raw.length <= 3) viewModel.updateCurrencySymbol(raw)
+            }
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -62,10 +94,11 @@ fun SettingsBar(viewModel: AppViewModel) {
         }
 
         OutlinedTextField(
-            value = settings.currencySymbol,
-            onValueChange = { if (it.length <= 3) viewModel.updateCurrencySymbol(it) },
+            state = symbolState,
             label = { Text("Symbol") },
-            singleLine = true,
+            labelPosition = TextFieldLabelPosition.Attached(alwaysMinimize = true),
+            lineLimits = androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine,
+            contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
             modifier = Modifier.width(80.dp),
         )
 
