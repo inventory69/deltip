@@ -124,3 +124,46 @@ jobs:
           generate_release_notes: true
           draft: false
           prerelease: false
+
+  # Veröffentlicht das Update-Manifest auf GitHub Pages direkt im selben Run.
+  # Nötig, weil ein vom GITHUB_TOKEN erstelltes Release KEINE Folge-Workflows
+  # triggert (GitHub-Schutz gegen Workflow-Rekursion) — der `release:`-Trigger
+  # von deploy-pages.yml würde also nie feuern. Logik gespiegelt aus
+  # deploy-pages.yml (das bleibt für manuellen Backfill via workflow_dispatch).
+  deploy-pages:
+    needs: [release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - name: Build latest.json
+        run: |
+          set -e
+          # Tag (z. B. v0.4.0) → Version ohne führendes v.
+          VERSION="${GITHUB_REF_NAME#v}"
+          test -n "$VERSION"
+          mkdir -p site
+          cat > site/latest.json <<EOF
+          {
+            "version": "${VERSION}",
+            "exeUrl": "https://github.com/${GITHUB_REPOSITORY}/releases/download/v${VERSION}/Deltip-${VERSION}.exe"
+          }
+          EOF
+          cat site/latest.json
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
