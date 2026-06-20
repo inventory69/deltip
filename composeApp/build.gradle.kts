@@ -10,6 +10,19 @@ plugins {
 
 val appVersion = project.findProperty("app.version") as String
 
+val generateAppInfo by tasks.registering {
+    val version = appVersion
+    val outDir = layout.buildDirectory.dir("generated/appinfo")
+    outputs.dir(outDir)
+    doLast {
+        val dir = outDir.get().asFile
+        dir.mkdirs()
+        dir.resolve("AppInfo.kt").writeText(
+            "package dev.dettmer.deltip\n\nobject AppInfo {\n    const val VERSION = \"$version\"\n}\n"
+        )
+    }
+}
+
 kotlin {
     androidTarget()
     jvm("desktop")
@@ -21,15 +34,19 @@ kotlin {
     }
 
     sourceSets {
-        commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.multiplatform.settings)
-            implementation(libs.androidx.lifecycle.viewmodel.compose)
+        commonMain {
+            kotlin.srcDir(generateAppInfo)
+            dependencies {
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.ui)
+                implementation(compose.components.resources)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.multiplatform.settings)
+                implementation(libs.androidx.lifecycle.viewmodel.compose)
+                implementation(compose.materialIconsExtended)
+            }
         }
 
         androidMain.dependencies {
@@ -101,6 +118,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(
                 TargetFormat.Exe,
+                TargetFormat.Msi,
                 TargetFormat.Deb,
                 TargetFormat.Rpm
             )

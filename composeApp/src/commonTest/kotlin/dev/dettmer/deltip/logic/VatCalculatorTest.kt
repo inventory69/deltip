@@ -34,4 +34,24 @@ class VatCalculatorTest {
         assertEquals(28.01, r.net)
         assertEquals(5.32, r.vatAmount)
     }
+
+    @Test fun fromNetStandardRate19() {
+        val r = VatCalculator.fromNet(100.0, 19.0)
+        assertEquals(119.0, r.gross)
+        assertEquals(100.0, r.net)
+        assertEquals(19.0, r.vatAmount)
+    }
+
+    @Test fun fromNetReducedRate7() {
+        val r = VatCalculator.fromNet(100.0, 7.0)
+        assertEquals(107.0, r.gross)
+        assertEquals(100.0, r.net)
+        assertEquals(7.0, r.vatAmount)
+    }
+
+    @Test fun fromNetZeroPercent() {
+        val r = VatCalculator.fromNet(50.0, 0.0)
+        assertEquals(50.0, r.gross)
+        assertEquals(0.0, r.vatAmount)
+    }
 }

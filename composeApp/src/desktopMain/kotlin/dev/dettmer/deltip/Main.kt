@@ -12,6 +12,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.dettmer.deltip.platform.applyDarkTitleBarIfSupported
+import dev.dettmer.deltip.platform.supportsAutoUpdate
 import dev.dettmer.deltip.state.AppViewModel
 import dev.dettmer.deltip.state.SettingsRepository
 
@@ -52,6 +53,9 @@ fun main() = application {
         val dark = isSystemInDarkTheme()
         LaunchedEffect(dark) {
             applyDarkTitleBarIfSupported(window, dark)
+        }
+        if (supportsAutoUpdate) {
+            LaunchedEffect(Unit) { vm.checkForUpdates() }
         }
         App(vm)
     }

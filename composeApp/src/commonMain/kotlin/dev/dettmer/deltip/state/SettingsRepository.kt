@@ -3,6 +3,7 @@ package dev.dettmer.deltip.state
 import com.russhwolf.settings.Settings
 import dev.dettmer.deltip.model.AppMode
 import dev.dettmer.deltip.model.AppSettings
+import dev.dettmer.deltip.model.VatDirection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,7 @@ class SettingsRepository(private val settings: Settings = Settings()) {
         settings.putFloat("windowY", newSettings.windowY)
         settings.putDouble("vatPercent", newSettings.vatPercent)
         settings.putString("mode", newSettings.mode.name)
+        settings.putString("vatDirection", newSettings.vatDirection.name)
         _state.value = newSettings
     }
 
@@ -34,5 +36,8 @@ class SettingsRepository(private val settings: Settings = Settings()) {
         mode = runCatching {
             AppMode.valueOf(settings.getString("mode", AppMode.RABATT.name))
         }.getOrDefault(AppMode.RABATT),
+        vatDirection = runCatching {
+            VatDirection.valueOf(settings.getString("vatDirection", VatDirection.GROSS_TO_NET.name))
+        }.getOrDefault(VatDirection.GROSS_TO_NET),
     )
 }

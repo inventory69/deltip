@@ -20,4 +20,20 @@ object VatCalculator {
             vatPercent = percent,
         )
     }
+
+    /**
+     * Grosses up a net amount by the given VAT percent.
+     *
+     * Example: net=100, percent=19 → gross=119.00; vatAmount=19.00
+     */
+    fun fromNet(net: Double, percent: Double): VatResult {
+        val gross = round(net * (1.0 + percent / 100.0) * 100) / 100
+        val vatAmount = round((gross - net) * 100) / 100
+        return VatResult(
+            gross = gross,
+            net = net,
+            vatAmount = vatAmount,
+            vatPercent = percent,
+        )
+    }
 }
