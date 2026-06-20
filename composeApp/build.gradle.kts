@@ -77,7 +77,7 @@ android {
         applicationId = "dev.dettmer.deltip"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4              // bumped for v0.4.0
+        versionCode = 5              // bumped for v0.4.1
         versionName = appVersion
     }
 

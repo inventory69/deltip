@@ -2,7 +2,7 @@
 
 > Discount calculator. VAT splitter. Clipboard-first. Personal tool - built for one person's workflow.
 
-![Version](https://img.shields.io/badge/version-0.4.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-0.4.1-blue?style=flat-square)
 ![License](https://img.shields.io/badge/license-GPL--3.0--or--later-green?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20Android-lightgrey?style=flat-square)
 
