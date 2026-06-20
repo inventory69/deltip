@@ -30,7 +30,9 @@ fun main() = application {
 
     val windowState = rememberWindowState(
         width = 360.dp,
-        height = 420.dp,
+        // Etwas Reserve: die native Windows-Titelleiste ist höher als die
+        // Linux-Dekoration und frisst sonst die letzte Zeile der Ergebnis-Card.
+        height = 470.dp,
         position = initialPosition,
     )
 

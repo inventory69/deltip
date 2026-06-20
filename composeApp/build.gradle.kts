@@ -45,6 +45,8 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.jna)
+                implementation(libs.jna.platform)
             }
         }
     }
@@ -94,8 +96,6 @@ compose.desktop {
     application {
         mainClass = "dev.dettmer.deltip.MainKt"
         jvmArgs += listOf(
-            "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED",
-            "--add-opens", "java.desktop/sun.awt.windows=ALL-UNNAMED",
             "--enable-native-access=ALL-UNNAMED",
         )
         nativeDistributions {
