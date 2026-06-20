@@ -1,12 +1,16 @@
+# Manueller Backfill / Re-Deploy des Update-Manifests auf GitHub Pages.
+# Der reguläre Auto-Publish bei jedem Release läuft im `deploy-pages`-Job von
+# release.yml (ein vom GITHUB_TOKEN erstelltes Release triggert keine
+# Folge-Workflows, ein `release:`-Trigger würde hier also nie feuern).
+# Dieser Workflow dient nur dazu, das Manifest für eine beliebige bestehende
+# Version von Hand neu zu setzen.
 name: Deploy Pages
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to publish (without leading v, e.g. 0.3.0)'
+        description: 'Version to publish (without leading v, e.g. 0.4.0)'
         required: true
         default: ''
 
@@ -30,12 +34,9 @@ jobs:
       - name: Build latest.json
         run: |
           set -e
-          # Version aus Release-Tag (führendes v strippen) bzw. dispatch-Input.
-          TAG="${{ github.event.release.tag_name }}"
-          VERSION="${TAG#v}"
-          if [ -z "$VERSION" ]; then
-            VERSION="${{ github.event.inputs.version }}"
-          fi
+          # Dispatch-Input (führendes v defensiv strippen).
+          VERSION="${{ github.event.inputs.version }}"
+          VERSION="${VERSION#v}"
           test -n "$VERSION"
           mkdir -p site
           # Asset-URL folgt der stabilen jpackage-Namenskonvention Deltip-<version>.exe.

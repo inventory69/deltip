@@ -70,9 +70,32 @@ actual suspend fun installUpdate(info: UpdateInfo): Unit = withContext(Dispatche
         tmpFile.toFile().outputStream().use { output -> input.copyTo(output) }
     }
     conn.disconnect()
-    // Silent-/Passive-Installer: sichtbarer Fortschritt, keine Prompts.
-    // Reihenfolge: Installer starten → App beenden, damit die MSI die
-    // Programmdateien ersetzen kann.
-    ProcessBuilder(tmpFile.toAbsolutePath().toString(), "/passive", "/norestart").start()
+
+    val installer = tmpFile.toAbsolutePath().toString()
+    // Pfad der laufenden App (jpackage-Launcher), um sie nach dem Update neu zu
+    // starten. Bleibt nach dem Major-Upgrade gleich (selbes Install-Verzeichnis).
+    val appExe = ProcessHandle.current().info().command().orElse(null)
+
+    // Eigenständiger Helfer-Batch, der die App überlebt (Windows killt
+    // ProcessBuilder-Kinder beim JVM-Exit nicht):
+    //  1. kurz warten, bis sich die App beendet hat (sonst sind Programmdateien
+    //     gesperrt) — `ping` statt `timeout`, da letzteres bei umgeleitetem
+    //     stdin abbricht.
+    //  2. /passive-Installer synchron durchlaufen lassen (cmd blockiert, bis er
+    //     fertig ist; /norestart unterdrückt nur einen System-Neustart).
+    //  3. die frisch installierte App wieder starten.
+    val batch = Files.createTempFile("deltip-update-", ".bat")
+    batch.toFile().writeText(
+        buildString {
+            appendLine("@echo off")
+            appendLine("ping -n 3 127.0.0.1 >nul")
+            appendLine("\"$installer\" /passive /norestart")
+            if (appExe != null) {
+                appendLine("ping -n 2 127.0.0.1 >nul")
+                appendLine("start \"\" \"$appExe\"")
+            }
+        },
+    )
+    ProcessBuilder("cmd", "/c", batch.toAbsolutePath().toString()).start()
     kotlin.system.exitProcess(0)
 }
