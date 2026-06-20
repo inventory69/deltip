@@ -2,7 +2,7 @@
 
 > Discount calculator. VAT splitter. Clipboard-first. Personal tool - built for one person's workflow.
 
-![Version](https://img.shields.io/badge/version-0.2.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-0.4.0-blue?style=flat-square)
 ![License](https://img.shields.io/badge/license-GPL--3.0--or--later-green?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20Android-lightgrey?style=flat-square)
 
@@ -10,7 +10,7 @@
 > **Beta.** The current version is tracked in `gradle.properties` (`app.version`). Public APIs and the settings schema may still change between releases.
 
 > [!NOTE]
-> **The UI is German-only.** English is planned for v0.3.0.
+> **The UI ships German and English strings** (since v0.3.0, via Compose Resources); German is the base locale. There is **no in-app language switcher** — the displayed language is whatever the system locale resolves to.
 
 ---
 
@@ -76,12 +76,15 @@ Native packages land in `composeApp/build/compose/binaries/main/`.
 
 ---
 
-## Planned (v0.3.0)
+## New in v0.4.0
 
-> [!NOTE]
-> No ETA. These are ideas, not commitments.
+- **Bidirectional VAT** - split gross→net or gross up net→gross, with a quick 19/7 % selector and a swap button.
+- **Dedicated settings screen** - always-on-top, autostart, VAT %, version and update controls moved off the main bar.
+- **Windows auto-update** - the desktop app polls a GitHub Pages `latest.json` manifest (with a GitHub Releases API fallback) and installs new versions in place.
 
-- **i18n** - English as a second language alongside German, via Compose Multiplatform resource strings. Language selection UX (system locale vs. in-app toggle) is still an open question.
+## Shipped in v0.3.0
+
+- **i18n** - English as a second language alongside German, via Compose Multiplatform resource strings, following the system locale.
 - **Signed Android APK** - keystore signing in CI so GitHub releases ship a ready-to-install `.apk`.
 
 ---
@@ -89,7 +92,7 @@ Native packages land in `composeApp/build/compose/binaries/main/`.
 ## Contributing
 
 > [!IMPORTANT]
-> The UI is currently German-only. Only commit messages and this README are in English. English UI is tracked under v0.3.0 - don't add i18n strings ahead of that.
+> The UI is bilingual (German base + English). Commit messages and this README are English; code comments are German. When adding user-facing text, add the key to **both** `values/strings.xml` and `values-en/strings.xml`.
 
 Before opening a PR:
 
