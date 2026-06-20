@@ -10,6 +10,19 @@ plugins {
 
 val appVersion = project.findProperty("app.version") as String
 
+val generateAppInfo by tasks.registering {
+    val version = appVersion
+    val outDir = layout.buildDirectory.dir("generated/appinfo")
+    outputs.dir(outDir)
+    doLast {
+        val dir = outDir.get().asFile
+        dir.mkdirs()
+        dir.resolve("AppInfo.kt").writeText(
+            "package dev.dettmer.deltip\n\nobject AppInfo {\n    const val VERSION = \"$version\"\n}\n"
+        )
+    }
+}
+
 kotlin {
     androidTarget()
     jvm("desktop")
@@ -21,15 +34,19 @@ kotlin {
     }
 
     sourceSets {
-        commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.multiplatform.settings)
-            implementation(libs.androidx.lifecycle.viewmodel.compose)
+        commonMain {
+            kotlin.srcDir(generateAppInfo)
+            dependencies {
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.ui)
+                implementation(compose.components.resources)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.multiplatform.settings)
+                implementation(libs.androidx.lifecycle.viewmodel.compose)
+                implementation(compose.materialIconsExtended)
+            }
         }
 
         androidMain.dependencies {
@@ -45,6 +62,8 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.jna)
+                implementation(libs.jna.platform)
             }
         }
     }
@@ -58,7 +77,7 @@ android {
         applicationId = "dev.dettmer.deltip"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3              // bumped for v0.3.0
+        versionCode = 4              // bumped for v0.4.0
         versionName = appVersion
     }
 
@@ -94,13 +113,12 @@ compose.desktop {
     application {
         mainClass = "dev.dettmer.deltip.MainKt"
         jvmArgs += listOf(
-            "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED",
-            "--add-opens", "java.desktop/sun.awt.windows=ALL-UNNAMED",
             "--enable-native-access=ALL-UNNAMED",
         )
         nativeDistributions {
             targetFormats(
                 TargetFormat.Exe,
+                TargetFormat.Msi,
                 TargetFormat.Deb,
                 TargetFormat.Rpm
             )

@@ -3,14 +3,22 @@ package dev.dettmer.deltip.ui
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -28,6 +37,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.dettmer.deltip.logic.PriceFormatter
 import dev.dettmer.deltip.model.AppMode
+import dev.dettmer.deltip.model.VatDirection
 import dev.dettmer.deltip.state.AppViewModel
 import deltip.composeapp.generated.resources.Res
 import deltip.composeapp.generated.resources.card_final_price
@@ -37,7 +47,9 @@ import deltip.composeapp.generated.resources.card_original_price
 import deltip.composeapp.generated.resources.label_copied
 import deltip.composeapp.generated.resources.label_discount
 import deltip.composeapp.generated.resources.label_gross
+import deltip.composeapp.generated.resources.label_net
 import deltip.composeapp.generated.resources.label_price
+import deltip.composeapp.generated.resources.label_swap_direction
 import deltip.composeapp.generated.resources.label_vat
 import org.jetbrains.compose.resources.stringResource
 import kotlinx.coroutines.delay
@@ -74,7 +86,6 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
     }
 
     var showCopiedHint by remember { mutableStateOf(false) }
-    // Show "copied" hint for whichever active result changes.
     val activeResult: Any? = if (settings.mode == AppMode.RABATT) result else vatResult
     LaunchedEffect(activeResult) {
         if (activeResult != null) {
@@ -129,10 +140,39 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
             }
 
             AppMode.MWST -> {
+                // Compact control row: 19%/7% segmented selector + swap direction button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.weight(1f)) {
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                            selected = settings.vatPercent == 19.0,
+                            onClick = { viewModel.updateVatPercent(19.0) },
+                        ) { Text("19 %") }
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                            selected = settings.vatPercent == 7.0,
+                            onClick = { viewModel.updateVatPercent(7.0) },
+                        ) { Text("7 %") }
+                    }
+                    IconButton(onClick = viewModel::toggleVatDirection) {
+                        Icon(Icons.Default.SwapVert, contentDescription = stringResource(Res.string.label_swap_direction))
+                    }
+                }
+
+                Spacer(Modifier.height(4.dp))
+
+                val inputLabel = when (settings.vatDirection) {
+                    VatDirection.GROSS_TO_NET -> stringResource(Res.string.label_gross)
+                    VatDirection.NET_TO_GROSS -> stringResource(Res.string.label_net)
+                }
+
                 OutlinedTextField(
                     value = input,
                     onValueChange = viewModel::updateSinglePrice,
-                    label = { Text(stringResource(Res.string.label_gross)) },
+                    label = { Text(inputLabel) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     interactionSource = interactionSource,
@@ -151,11 +191,15 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
                                 settings.vatPercent.toLong().toString()
                             else
                                 settings.vatPercent.toString()
-                            Text(stringResource(Res.string.card_gross, PriceFormatter.format(vatResult!!.gross, settings.currencySymbol)))
+                            val grossIsCopyTarget = settings.vatDirection == VatDirection.NET_TO_GROSS
+                            Text(
+                                stringResource(Res.string.card_gross, PriceFormatter.format(vatResult!!.gross, settings.currencySymbol)),
+                                fontWeight = if (grossIsCopyTarget) FontWeight.Bold else FontWeight.Normal,
+                            )
                             Text(stringResource(Res.string.label_vat, percentText, PriceFormatter.format(vatResult!!.vatAmount, settings.currencySymbol)))
                             Text(
                                 stringResource(Res.string.card_net, PriceFormatter.format(vatResult!!.net, settings.currencySymbol)),
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = if (!grossIsCopyTarget) FontWeight.Bold else FontWeight.Normal,
                             )
                         }
                     }
@@ -169,5 +213,3 @@ fun SinglePriceScreen(viewModel: AppViewModel) {
         }
     }
 }
-
-

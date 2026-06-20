@@ -12,6 +12,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.dettmer.deltip.platform.applyDarkTitleBarIfSupported
+import dev.dettmer.deltip.platform.supportsAutoUpdate
 import dev.dettmer.deltip.state.AppViewModel
 import dev.dettmer.deltip.state.SettingsRepository
 
@@ -30,7 +31,9 @@ fun main() = application {
 
     val windowState = rememberWindowState(
         width = 360.dp,
-        height = 420.dp,
+        // Etwas Reserve: die native Windows-Titelleiste ist höher als die
+        // Linux-Dekoration und frisst sonst die letzte Zeile der Ergebnis-Card.
+        height = 470.dp,
         position = initialPosition,
     )
 
@@ -50,6 +53,9 @@ fun main() = application {
         val dark = isSystemInDarkTheme()
         LaunchedEffect(dark) {
             applyDarkTitleBarIfSupported(window, dark)
+        }
+        if (supportsAutoUpdate) {
+            LaunchedEffect(Unit) { vm.checkForUpdates() }
         }
         App(vm)
     }

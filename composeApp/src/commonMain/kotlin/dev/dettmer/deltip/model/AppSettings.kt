@@ -10,4 +10,5 @@ data class AppSettings(
     val windowY: Float = -1f,
     val vatPercent: Double = 19.0,
     val mode: AppMode = AppMode.RABATT,
+    val vatDirection: VatDirection = VatDirection.GROSS_TO_NET,
 )
